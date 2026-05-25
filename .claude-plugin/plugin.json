@@ -1,0 +1,9 @@
+{
+  "name": "claude-code-agent-team",
+  "version": "1.0.0",
+  "description": "A multi-agent software development team plugin for Claude Code. Simulates real-world team workflows: user (client) -> agent team -> auto-dispatch -> result aggregation -> output.",
+  "author": {
+    "name": "yjydist"
+  },
+  "keywords": ["agents", "team", "development", "workflow", "orchestration"]
+}
