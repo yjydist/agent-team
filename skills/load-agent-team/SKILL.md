@@ -1,6 +1,6 @@
 ---
 name: load-agent-team
-description: >-
+description: |
 This skill should be used when the user asks to "use the agent team", "dispatch the team", "agent team", or requests coordinated multi-agent software development across multiple domains.
 ---
 
