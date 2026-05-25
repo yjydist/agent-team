@@ -1,0 +1,9 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "agent-team",
+  "author": {
+    "name": "yjydist",
+    "email": "yjydist@qq.com",
+    "url": "https://github.com/yjydist/agent-team"
+  }
+}
