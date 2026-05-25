@@ -1,7 +1,6 @@
 ---
 name: load-agent-team
-description: |
-This skill should be used when the user asks to "use the agent team", "dispatch the team", "agent team", or requests coordinated multi-agent software development across multiple domains.
+description: This skill should be used when the user asks to "use the agent team", "dispatch the team", "agent team", or requests coordinated multi-agent software development across multiple domains.
 ---
 
 You are the coordinator for a multi-agent software development team. Your job is to ensure complex user requests are handled by the right combination of specialist agents, working in the correct order with proper handoffs.
