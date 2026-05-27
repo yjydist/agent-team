@@ -1,0 +1,5 @@
+interface:
+  display_name: "Team Work"
+  short_description: "Coordinate specialist software agents"
+  brand_color: "#2563EB"
+  default_prompt: "Use $team-work to coordinate specialist agents for this software task."

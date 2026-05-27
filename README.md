@@ -1,310 +1,94 @@
-# Claude Code Agent Team
+# Agent Team
 
-A multi-agent software development team plugin for Claude Code that simulates real-world team workflows.
+Agent Team is a compatible multi-agent software development plugin. It now provides a Codex-first `team-work` skill while keeping the existing Claude Code and Qwen metadata for users who still rely on those runtimes.
 
-## Overview
+Use it when a request benefits from coordinated specialist reasoning: product scope, architecture, frontend, backend, database, DevOps, QA, security, mobile, and final synthesis.
 
-This plugin creates a virtual software development team inside Claude Code. You act as the **client (甲方)**, and the plugin orchestrates a team of specialist agents to deliver complete solutions.
+## What Changed for Codex
 
-```
-You (Client)
-    |
-    v
-[team-lead] -- listens, clarifies, decides team composition
-    |
-    v
-[product-manager] -- requirements & PRD (when needed)
-    |
-    v
-[system-architect] + [ui-ux-designer] -- architecture & design
-    |
-    v
-[frontend-developer] + [backend-developer] + [database-engineer] + [devops-engineer]
-    |-- implementation (parallel, based on dependencies)
-    |
-    v
-[qa-engineer] + [security-engineer] -- quality gates
-    |
-    v
-[output-aggregator] -- synthesizes final deliverable
-    |
-    v
-Complete solution delivered to you
-```
+- `.codex-plugin/plugin.json` is the Codex plugin manifest.
+- `skills/team-work/SKILL.md` is the Codex entry point.
+- `skills/team-work/references/` contains routing, dispatch, handoff, and evaluation details loaded only when needed.
+- `agents/*.md` remain available as Claude-compatible specialist profiles and reference material.
+- `.claude-plugin/plugin.json` and `qwen-extension.json` are preserved for compatibility.
 
-The **team-lead** agent is your single point of contact. It understands your request, asks clarifying questions if needed, determines which specialists are required, coordinates their execution (parallel or sequential), and ensures the final output meets your expectations.
-
-## Routing Model
-
-The plugin supports two routing modes.
-
-### Explicit Team Mode
-
-Use this mode when you want coordinated multi-agent work. Trigger it with phrases such as:
+## Repository Layout
 
 ```text
-Use the agent team to design and build a real-time chat application.
-Dispatch the team for this platform migration.
-Coordinate multiple agents for frontend, backend, database, and deployment planning.
+.
+├── .codex-plugin/plugin.json      # Codex plugin manifest
+├── .claude-plugin/plugin.json     # Claude Code compatibility manifest
+├── qwen-extension.json            # Qwen compatibility manifest
+├── skills/
+│   └── team-work/
+│       ├── SKILL.md               # Codex-first coordination skill
+│       ├── agents/openai.yaml     # Codex skill UI metadata
+│       ├── references/            # Routing, dispatch, handoff guidance
+│       └── scripts/               # Offline routing eval validator
+├── agents/                        # Legacy specialist agent profiles
+├── AGENTS.md                      # Contributor guide
+└── LICENSE
 ```
 
-In this mode, `team-lead` coordinates the workflow, dispatches specialists in dependency order, and sends the collected outputs to `output-aggregator`.
+## Usage in Codex
 
-### Specialist Direct Mode
+Invoke the skill explicitly for coordinated work:
 
-Use this mode for focused single-domain work. Claude Code can route directly to the most relevant specialist, such as `database-engineer` for SQL tuning, `security-engineer` for threat modeling, `qa-engineer` for test strategy, or `frontend-developer` for UI implementation.
+```text
+Use $team-work to plan and implement this full-stack feature.
+Use $team-work to coordinate parallel agents for this migration.
+Use $team-work to review this multi-domain architecture change.
+```
 
-## Prerequisites
+The skill is intentionally selective. It should not expand a simple one-file bug, single SQL query, or ordinary explanation into a full team workflow unless you ask for team mode. Medium tasks use a small coordinated team; complex tasks use phased planning, implementation, verification, and synthesis.
 
-- [Claude Code](https://claude.ai/code) CLI installed
-- Claude Code version that supports plugins
+## Coordination Model
 
-## Installation
+The `team-work` skill follows this flow:
 
-### Local Development
+1. Classify the request by goal, deliverable, domains, risk, and dependencies.
+2. Classify complexity as simple, medium, or complex.
+3. Select the smallest effective team using `references/routing-matrix.md`.
+4. Build dependency batches before dispatching.
+5. Parallelize only independent work with clear ownership boundaries.
+6. Synthesize multiple outputs only when there are multiple specialists, conflicts, or final integration decisions.
 
-Run Claude Code with this plugin directory:
+Parallel work is favored when it does not create integration risk. The dispatch protocol explicitly prevents overlapping edits to the same files, unresolved API/schema conflicts, or implementation before required contracts exist. Routing scenarios in `references/routing-evals.json` keep simple, medium, and complex behavior from drifting.
+
+## Specialist Roles
+
+| Role | Primary Ownership |
+| --- | --- |
+| `product-manager` | Scope, user stories, acceptance criteria, prioritization |
+| `system-architect` | Architecture, service boundaries, technology choices |
+| `ui-ux-designer` | User flows, wireframes, usability, design systems |
+| `frontend-developer` | Browser UI, components, state, layout, accessibility |
+| `backend-developer` | APIs, services, auth services, jobs, integrations |
+| `fullstack-developer` | Small end-to-end slices and prototypes |
+| `mobile-developer` | iOS, Android, React Native, Flutter, device APIs |
+| `database-engineer` | Schema, migrations, queries, indexes, data pipelines |
+| `devops-engineer` | CI/CD, containers, cloud, observability, releases |
+| `qa-engineer` | Test strategy, automation, quality gates |
+| `security-engineer` | Auth, secrets, payment, public APIs, compliance |
+| `output-aggregator` | Multi-output synthesis and conflict resolution |
+
+## Development and Validation
+
+There is no build step. Validate changes with:
 
 ```bash
-claude --plugin-dir /path/to/claude-code-agent-team
+python3 /Users/yjydist/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py /path/to/claude-agent-team
+python3 /Users/yjydist/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/claude-agent-team/skills/team-work
+python3 /path/to/claude-agent-team/skills/team-work/scripts/check-routing-evals.py /path/to/claude-agent-team/skills/team-work/references/routing-evals.json
+git diff --check
 ```
 
-### Project-Level Usage
+For Claude Code compatibility, load the directory manually:
 
-Keep the plugin as a complete directory so `.claude-plugin/plugin.json`, `agents/`, and `skills/` stay together. Do not copy with `*`, because shell globs skip hidden directories such as `.claude-plugin/`.
-
-Example layout:
-
-```text
-your-project/
-└── plugins/
-    └── claude-code-agent-team/
-        ├── .claude-plugin/
-        │   └── plugin.json
-        ├── agents/
-        └── skills/
+```bash
+claude --plugin-dir /path/to/claude-agent-team
 ```
 
-Then start Claude Code with the plugin directory path.
+## Compatibility Notes
 
-## The Team
-
-| Agent | Role | When Dispatched |
-|-------|------|-----------------|
-| **team-lead** | Client liaison & team coordinator | **Always first** -- your single point of contact |
-| **product-manager** | Requirements analyst & PRD author | New features, unclear requirements, product scoping |
-| **system-architect** | Architecture design & tech decisions | Complex systems, new platforms, scaling concerns |
-| **ui-ux-designer** | Interface design & user experience | UI mockups, design systems, usability review |
-| **frontend-developer** | Client-side implementation | React/Vue/Angular components, SPAs, PWA |
-| **backend-developer** | Server-side implementation | APIs, business logic, microservices |
-| **fullstack-developer** | End-to-end implementation | Full-stack apps, frontend+backend integration |
-| **mobile-developer** | Mobile application development | iOS/Android, React Native, Flutter |
-| **database-engineer** | Data design & optimization | Schemas, migrations, query tuning, ETL |
-| **security-engineer** | Security audit & hardening | Code review, auth design, vulnerability assessment |
-| **qa-engineer** | Testing strategy & automation | Test plans, coverage, CI integration |
-| **devops-engineer** | CI/CD & infrastructure | Deployment pipelines, Docker, K8s, cloud |
-| **output-aggregator** | Result synthesis & final output | **Always last** -- compiles all deliverables |
-
-## Usage
-
-Simply describe your software development need in natural language. The **team-lead** agent will analyze your request, determine the appropriate team composition, and coordinate the workflow automatically.
-
-### How It Works
-
-1. **You describe the need** -- "Build a blogging platform with user auth and comments"
-2. **team-lead assesses** -- decides complexity, asks clarifying questions if needed
-3. **team-lead assembles the team** -- dispatches the right specialists in the right order
-4. **Agents work** -- parallel or sequential, passing outputs forward
-5. **output-aggregator synthesizes** -- compiles all outputs into a coherent deliverable
-6. **team-lead presents** -- delivers the final result to you
-
-## Workflows
-
-The team-lead automatically determines task complexity and selects the appropriate workflow.
-
-### Simple Task Workflow (1-2 agents)
-
-For single-domain questions with clear scope. No PRD or architecture needed.
-
-**Example:** "How do I optimize this SQL query?"
-
-```
-You
- |
- v
-team-lead -- analyzes: single-domain, straightforward
- |
- v
-database-engineer -- query analysis & optimization
- |
- v
-output-aggregator -- presents optimized query with explanation
- |
- v
-You -- receive answer
-```
-
-**When triggered:** Pure questions, single-file changes, query optimization, error explanation, code review of one component.
-
-**Team size:** 1 specialist + output-aggregator.
-
----
-
-### Medium Task Workflow (3-5 agents)
-
-For features spanning 2-3 domains with clear requirements. No dedicated PRD phase.
-
-**Example:** "Build a login page with JWT authentication"
-
-```
-You
- |
- v
-team-lead -- analyzes: multi-domain feature, requirements are clear
- |
- +----------------+-----------------+------------------+
- v                v                 v
-ui-ux-designer  backend-developer  frontend-developer
- |                |                 |
- login            JWT               React
- design           API               component
- |                |                 |
- +----------------+-----------------+
- |
- v
-security-engineer -- audits auth flow
- |
- v
-output-aggregator -- compiles implementation guide
- |
- v
-You -- receive deliverable
-```
-
-**When triggered:** Feature implementations, API + frontend integration, component libraries, deployment setup.
-
-**Team size:** 3-4 specialists + security/QA (if production) + output-aggregator.
-
----
-
-### Complex Task Workflow (6-12 agents)
-
-For new products or platforms requiring full SDLC. Dedicated requirements and architecture phases.
-
-**Example:** "Build a full e-commerce platform with payment integration"
-
-```
-You
- |
- v
-team-lead -- analyzes: new product, requires full SDLC
- |
- v
-+==========================+
-| Phase 1: Requirements    |
-+==========================+
- |
- +-- product-manager --> PRD & user stories
- |
- v
-+==========================+
-| Phase 2: Architecture    |
-+==========================+
- |
- +-- system-architect --> tech stack & system design
- +-- ui-ux-designer --> user flows & wireframes (parallel)
- |
- v
-+==========================+
-| Phase 3: Implementation  |
-+==========================+
- |
- +-- database-engineer --> schema & migrations
- +-- backend-developer --> order management API
- +-- frontend-developer --> product catalog UI
- +-- devops-engineer --> CI/CD & infrastructure
-     (all parallel after Phase 2 completes)
- |
- v
-+==========================+
-| Phase 4: Quality Gates   |
-+==========================+
- |
- +-- security-engineer --> security audit
- +-- qa-engineer --> test plan & automation
-     (parallel)
- |
- v
-+==========================+
-| Phase 5: Delivery        |
-+==========================+
- |
- +-- output-aggregator --> final platform documentation
- |
- v
-You -- receive complete deliverable
-```
-
-**When triggered:** New product builds, platform migrations, microservices architecture, full-stack applications from scratch.
-
-**Team size:** Full team (10+ agents across 5 phases).
-
-## Task Complexity Guide
-
-The team-lead automatically determines complexity and adjusts the team size:
-
-| Complexity | Agents | Example |
-|------------|--------|---------|
-| **Simple** | 1-2 | "Optimize this SQL query", "Explain this error" |
-| **Medium** | 3-5 | "Build a login page", "Add Stripe payments" |
-| **Complex** | 6-12 | "Build an e-commerce platform", "Design a microservices architecture" |
-
-## Agent Team Skill
-
-This plugin also provides an `agent-team` skill that activates when you explicitly request team coordination:
-
-```
-Use the agent team to build a real-time chat application
-```
-
-The skill provides detailed orchestration logic for complex multi-agent workflows.
-
-## Plugin Structure
-
-```
-claude-code-agent-team/
-├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest
-├── agents/                       # Agent definitions (13 agents)
-│   ├── team-lead.md             # Client liaison & coordinator
-│   ├── product-manager.md       # Requirements & PRD
-│   ├── system-architect.md      # Architecture design
-│   ├── ui-ux-designer.md        # Interface design
-│   ├── frontend-developer.md    # Client-side dev
-│   ├── backend-developer.md     # Server-side dev
-│   ├── fullstack-developer.md   # End-to-end dev
-│   ├── mobile-developer.md      # Mobile dev
-│   ├── database-engineer.md     # Data design
-│   ├── security-engineer.md     # Security audit
-│   ├── qa-engineer.md           # Testing strategy
-│   ├── devops-engineer.md       # CI/CD & infra
-│   └── output-aggregator.md     # Result synthesis
-├── skills/
-│   └── agent-team/
-│       └── SKILL.md             # Team orchestration skill
-├── README.md
-└── .gitignore
-```
-
-This plugin does not currently provide slash commands, hooks, or MCP servers. It is intentionally focused on auto-discovered agents plus the `agent-team` orchestration skill.
-
-## Tips for Best Results
-
-1. **Be specific** -- The more context you provide, the better the team-lead can match specialists
-2. **Mention constraints** -- Budget, timeline, tech stack preferences help the team-lead make better decisions
-3. **Simple questions are fine** -- The team-lead recognizes when only 1 specialist is needed and won't spin up the whole team
-4. **Iterate** -- After receiving deliverables, you can ask follow-ups; the team-lead will dispatch the right agent to refine
-
-## License
-
-MIT
+Codex discovers the plugin through `.codex-plugin/plugin.json` and the `team-work` skill. Codex does not automatically treat `agents/*.md` as native subagents; those files are retained for Claude Code compatibility and as source material for the routing references.

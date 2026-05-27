@@ -1,174 +1,58 @@
 ---
 name: team-work
-description: "This skill should be used when the user asks to \"use the agent team\", \"dispatch the team\", \"agent team\", or requests coordinated multi-agent software development across multiple domains."
+description: Use this skill when the user explicitly asks for an agent team, team dispatch, coordinated specialists, parallel agents, multi-agent software development, or when a software engineering task spans multiple independent domains such as product, architecture, frontend, backend, database, DevOps, QA, and security. Prefer direct local work for narrow single-domain tasks unless coordination materially improves the result.
 ---
 
-You are the coordinator for a multi-agent software development team. Your job is to ensure complex user requests are handled by the right combination of specialist agents, working in the correct order with proper handoffs.
+# Team Work
 
-## When to invoke
+Coordinate specialist software engineering work without over-dispatching. Optimize for correct decomposition, complexity-appropriate process, safe parallelism, clear handoffs, and concise final synthesis.
 
-- **Full application build.** The user says "Build a blogging platform with user auth, posts, comments, and admin dashboard." This requires product-manager, system-architect, ui-ux-designer, frontend-developer, backend-developer, database-engineer, devops-engineer, qa-engineer, security-engineer, and finally output-aggregator.
-- **Architecture + implementation.** The user asks "Design and build a real-time chat system." This requires system-architect first, then backend-developer and frontend-developer in parallel, then qa-engineer and security-engineer, then output-aggregator.
-- **Security-focused project.** The user requests "Build a secure file sharing service with end-to-end encryption." This requires security-engineer involvement from the start, alongside the usual team.
-- **Team request.** The user explicitly says "Use the agent team to..." or "Dispatch the team for..." -- immediately activate this workflow regardless of perceived complexity.
-- **Multi-domain question.** The user's request touches 3+ expertise areas (e.g., "I need a mobile app with a backend API, deployed to AWS, with CI/CD").
+## Core Workflow
 
-## When not to invoke
+1. Classify the request: goal, deliverable, domains, risk, dependencies, whether code edits are expected, and task complexity.
+2. Match process depth to complexity. Simple tasks stay direct; complex tasks get phased coordination.
+3. Read [routing-matrix.md](references/routing-matrix.md) when role selection is unclear.
+4. Build dependency batches before dispatching work. Run independent batches in parallel when write scopes and decisions do not conflict.
+5. Use [dispatch-protocol.md](references/dispatch-protocol.md) for parallelization, ownership, failure handling, and merge rules.
+6. Use [handoff-contracts.md](references/handoff-contracts.md) when preparing specialist briefs or synthesizing multiple outputs.
+7. Return one unified answer. Use aggregation only when multiple outputs, unresolved decisions, or contradictions need synthesis.
 
-- Do not use full team orchestration for single-domain questions such as one SQL query, one React component, one test failure, or one security finding.
-- Do not dispatch the full team when a specialist agent can answer directly without cross-domain coordination.
-- Do not add product-manager or system-architect unless requirements, scope, architecture, or dependencies are unclear enough to justify them.
+## Complexity Levels
 
-## Team Roster
+- **Simple**: one narrow domain, one file/component/query/test failure, or ordinary explanation. Handle locally or use one specialist. Do not add product, architecture, QA, security, or aggregation unless the user explicitly asks or risk requires it.
+- **Medium**: one feature slice or 2-3 domains with clear scope, such as API plus UI, schema plus migration, or CI plus test gates. Use 2-4 roles, define contracts first, and parallelize only after dependencies are clear.
+- **Complex**: new product/platform, major refactor, multi-system change, unclear scope, or several risk domains. Use phased coordination: product scope, architecture/design, implementation batches, targeted QA/security, then synthesis if needed.
 
-| Agent | Expertise | Dispatch Priority |
-|-------|-----------|-------------------|
-| **team-lead** | Client liaison, task decomposition and routing | Always first |
-| **product-manager** | Requirements, PRD, user stories | First for new features/products |
-| **system-architect** | Architecture, tech stack, scalability | Early, after PM if applicable |
-| **ui-ux-designer** | Interface design, user flows | Early, parallel with architect |
-| **frontend-developer** | React/Vue/Angular, client-side | Implementation phase |
-| **backend-developer** | APIs, business logic, services | Implementation phase |
-| **fullstack-developer** | End-to-end web applications | When task spans full stack |
-| **mobile-developer** | iOS/Android, React Native, Flutter | Mobile-specific tasks |
-| **database-engineer** | Schema design, queries, migrations | Implementation phase |
-| **security-engineer** | Security audit, auth, vulnerabilities | Quality gate or early for security-critical |
-| **qa-engineer** | Testing strategy, automation | Quality gate phase |
-| **devops-engineer** | CI/CD, Docker, K8s, cloud | Deployment/infrastructure tasks |
-| **output-aggregator** | Result synthesis, final output | Always last |
+## Dispatch Heuristics
 
-## Dispatch Workflow
+- **Do not dispatch** for a single bug explanation, one SQL query, one component, one file edit, or ordinary Q&A unless the user explicitly asks for team mode.
+- **Use one specialist** when one domain owns the work and no cross-domain contract is needed.
+- **Use 2-4 specialists** when work spans separable domains, such as API plus UI, schema plus migration, or deployment plus CI.
+- **Use product-manager** only for ambiguous product scope, MVP trade-offs, prioritization, or acceptance criteria.
+- **Use system-architect** for new platforms, major refactors, distributed systems, cross-service boundaries, or important technology choices.
+- **Use qa-engineer** when testing strategy, coverage, E2E, CI quality gates, or release confidence is the main risk.
+- **Use security-engineer** for auth, authorization, secrets, payment, public APIs, data deletion, encryption, compliance, or security findings.
+- **Use output-aggregator** for multi-agent synthesis or conflict resolution, not as a mandatory final step for every simple task.
 
-### Step 1: Analyze Request
+## Parallelism Rules
 
-Read the user's request and identify:
-- What domains are involved? (frontend, backend, mobile, devops, security, etc.)
-- Is this a new feature/product or an improvement to existing code?
-- Are there any explicit constraints? (timeline, budget, tech stack)
-- What is the expected deliverable?
+Parallelize only when all of these are true:
 
-### Step 2: Determine Team Composition
+- Each agent has a distinct output or file/module ownership area.
+- No agent needs another agent's unfinished decision to start.
+- Shared contracts are already defined or the parallel task is explicitly exploratory.
+- The expected integration path is clear.
 
-Based on analysis, decide which agents to dispatch:
+Do not parallelize competing edits to the same files, overlapping API/schema decisions, or work that depends on unresolved architecture.
 
-**Simple Task (1-2 agents):**
-- Example: "How do I optimize this SQL query?"
-- Dispatch: database-engineer, then output-aggregator
+## Codex Compatibility
 
-**Medium Task (3-5 agents):**
-- Example: "Build a login page with JWT auth"
-- Dispatch: product-manager + ui-ux-designer (parallel), then frontend-developer + backend-developer (parallel), then output-aggregator
+This skill is the Codex-first entry point. The repository also contains `agents/*.md`, `.claude-plugin/plugin.json`, and `qwen-extension.json` for compatibility with other agent ecosystems. Treat those files as role references unless the active runtime exposes matching agent tools.
 
-**Complex Task (6+ agents):**
-- Example: "Build a full e-commerce platform"
-- Dispatch: product-manager -> system-architect -> ui-ux-designer (sequential Phase 1), then frontend-developer + backend-developer + database-engineer + devops-engineer (parallel Phase 2), then qa-engineer + security-engineer (parallel Phase 3), then output-aggregator
+## Maintaining Routing Quality
 
-### Step 3: Execute Dispatch Sequence
+When changing routing, complexity, or dispatch behavior, update [routing-evals.json](references/routing-evals.json), follow [eval-guide.md](references/eval-guide.md) for manual forward-testing, and run:
 
-For each agent in the sequence:
-
-1. **Prepare a task brief** with:
-   - Original user request (for context)
-   - Specific subtask for this agent
-   - Inputs from previously completed agents
-   - Expected output format
-   - Dependencies and next steps
-
-2. **Dispatch the agent** using the Agent tool with the appropriate subagent_type
-
-3. **Wait for completion** before dispatching dependent agents
-
-4. **Pass outputs forward** to the next agents in the chain
-
-### Step 4: Aggregate Results
-
-After all specialist agents complete:
-
-1. **Dispatch output-aggregator** with:
-   - Original user request
-   - List of all agents involved
-   - All outputs from specialist agents
-   - Any conflicts or decisions made
-
-2. **Present final deliverable** to the user
-
-## Task Brief Template
-
-When dispatching to a specialist agent, provide:
-
-```
-## Task Brief
-
-**Original Request:** [User's full request]
-**Your Subtask:** [What this specific agent should do]
-**Context:** [Background, constraints, decisions already made]
-**Inputs:** [Files, schemas, designs from other agents]
-**Expected Output:** [Format and content expectations]
-**Next Steps:** [What happens after this agent completes]
-```
-
-## Dependency Rules
-
-- **Independent tasks** -> Dispatch in parallel to save time
-- **Dependent tasks** -> Dispatch sequentially, passing outputs forward
-- **Always dispatch product-manager first** for new features/products
-- **Always dispatch output-aggregator last** to synthesize results
-- **Include security-engineer** for any production code or auth-related work
-- **Include qa-engineer** for any implementation work
-
-## Examples
-
-### Example 1: Simple Query Optimization
-```
-User: "How do I optimize this slow SQL query?"
-
-Dispatch:
-1. database-engineer: Analyze and optimize the query
-2. output-aggregator: Present the optimized query with explanation
-```
-
-### Example 2: Fullstack Feature
-```
-User: "Add a user profile page with avatar upload to our Next.js app"
-
-Dispatch:
-Phase 1 (parallel):
-- product-manager: Define profile feature requirements
-- ui-ux-designer: Design profile page layout
-
-Phase 2 (parallel):
-- frontend-developer: Build profile UI with avatar upload
-- backend-developer: Build avatar upload API and user profile endpoints
-- database-engineer: Add avatar_url column to users table
-
-Phase 3 (parallel):
-- qa-engineer: Write tests for profile feature
-- security-engineer: Review file upload security
-
-Phase 4:
-- output-aggregator: Compile complete implementation guide
-```
-
-### Example 3: Complex Platform
-```
-User: "Build a SaaS analytics dashboard with real-time data"
-
-Dispatch:
-Phase 1 (sequential):
-- product-manager: Define MVP requirements and user stories
-- system-architect: Design event-driven architecture, select tech stack
-- ui-ux-designer: Design dashboard layouts and data visualization
-
-Phase 2 (parallel):
-- database-engineer: Design time-series schema, data retention policy
-- backend-developer: Build event ingestion API, real-time WebSocket feeds
-- frontend-developer: Build dashboard with real-time charts
-- devops-engineer: Set up Kafka, Redis, CI/CD, K8s deployment
-
-Phase 3 (parallel):
-- security-engineer: Audit auth, data access, API security
-- qa-engineer: Test data pipeline, load test WebSocket connections
-
-Phase 4:
-- output-aggregator: Compile complete platform documentation
+```bash
+python3 skills/team-work/scripts/check-routing-evals.py skills/team-work/references/routing-evals.json
 ```

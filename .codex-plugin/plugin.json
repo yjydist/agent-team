@@ -1,0 +1,35 @@
+{
+  "name": "agent-team",
+  "version": "1.0.0",
+  "description": "Coordinated software engineering team workflow for Codex.",
+  "author": {
+    "name": "yjydist"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "software-development",
+    "coordination",
+    "planning",
+    "code-review"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Team",
+    "shortDescription": "Coordinate specialist software engineering agents.",
+    "longDescription": "Agent Team provides a Codex-first coordination skill for decomposing software engineering work, selecting specialist roles, running independent work in parallel when safe, and synthesizing results. The repository also keeps Claude Code and Qwen metadata for compatibility.",
+    "developerName": "yjydist",
+    "category": "Productivity",
+    "capabilities": [
+      "Planning",
+      "Write",
+      "Review"
+    ],
+    "defaultPrompt": [
+      "Use $team-work to coordinate specialists for this feature.",
+      "Use $team-work to plan a parallel implementation workflow.",
+      "Use $team-work to review this multi-domain change."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

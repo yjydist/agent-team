@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "roles": [
+    "product-manager",
+    "system-architect",
+    "ui-ux-designer",
+    "frontend-developer",
+    "backend-developer",
+    "fullstack-developer",
+    "mobile-developer",
+    "database-engineer",
+    "devops-engineer",
+    "qa-engineer",
+    "security-engineer",
+    "output-aggregator"
+  ],
+  "scenarios": [
+    {
+      "id": "simple-sql-optimization",
+      "category": "direct_specialist",
+      "complexity": "simple",
+      "prompt": "Optimize this slow SQL query and explain the index choice.",
+      "required_roles": ["database-engineer"],
+      "optional_roles": [],
+      "forbidden_roles": [
+        "product-manager",
+        "system-architect",
+        "frontend-developer",
+        "backend-developer",
+        "devops-engineer",
+        "output-aggregator"
+      ],
+      "dependency_notes": [],
+      "expected_process": "Use a direct specialist path. Do not create a multi-agent workflow or final aggregation step."
+    },
+    {
+      "id": "simple-react-component",
+      "category": "direct_specialist",
+      "complexity": "simple",
+      "prompt": "Build one accessible React profile card component from these props.",
+      "required_roles": ["frontend-developer"],
+      "optional_roles": ["ui-ux-designer"],
+      "forbidden_roles": [
+        "product-manager",
+        "system-architect",
+        "backend-developer",
+        "database-engineer",
+        "devops-engineer",
+        "output-aggregator"
+      ],
+      "dependency_notes": [],
+      "expected_process": "Keep the workflow narrow. Use one frontend owner unless the UI interaction requirements are ambiguous."
+    },
+    {
+      "id": "simple-ci-question",
+      "category": "direct_specialist",
+      "complexity": "simple",
+      "prompt": "Why is this GitHub Actions cache step not restoring node_modules?",
+      "required_roles": ["devops-engineer"],
+      "optional_roles": [],
+      "forbidden_roles": [
+        "product-manager",
+        "system-architect",
+        "frontend-developer",
+        "backend-developer",
+        "output-aggregator"
+      ],
+      "dependency_notes": [],
+      "expected_process": "Use one operational specialist and answer directly."
+    },
+    {
+      "id": "medium-login-api-ui",
+      "category": "multi_domain_parallel",
+      "complexity": "medium",
+      "prompt": "Use the agent team to add a login page backed by JWT authentication.",
+      "required_roles": [
+        "frontend-developer",
+        "backend-developer",
+        "security-engineer"
+      ],
+      "optional_roles": ["product-manager", "ui-ux-designer", "qa-engineer", "output-aggregator"],
+      "forbidden_roles": ["mobile-developer", "devops-engineer"],
+      "dependency_notes": [
+        "frontend-developer and backend-developer may run in parallel only after the auth and API contract is explicit",
+        "security-engineer should review the authentication and authorization assumptions"
+      ],
+      "expected_process": "Coordinate UI and API work, include security because auth is involved, and avoid unrelated mobile or infrastructure roles."
+    },
+    {
+      "id": "medium-profile-avatar-upload",
+      "category": "multi_domain_parallel",
+      "complexity": "medium",
+      "prompt": "Add a user profile page with avatar upload to an existing web app.",
+      "required_roles": [
+        "frontend-developer",
+        "backend-developer",
+        "security-engineer"
+      ],
+      "optional_roles": ["database-engineer", "qa-engineer", "ui-ux-designer", "output-aggregator"],
+      "forbidden_roles": ["mobile-developer", "devops-engineer"],
+      "dependency_notes": [
+        "backend-developer should define upload constraints before frontend-developer finalizes client behavior",
+        "security-engineer should check file validation, storage exposure, and abuse limits"
+      ],
+      "expected_process": "Use a medium workflow with explicit UI/API ownership and targeted security review. Add database or QA only if persistence or verification risk requires it."
+    },
+    {
+      "id": "medium-zero-downtime-migration",
+      "category": "risk_gated",
+      "complexity": "medium",
+      "prompt": "Plan a zero-downtime migration that adds a required column to the users table.",
+      "required_roles": ["database-engineer", "backend-developer"],
+      "optional_roles": ["devops-engineer", "qa-engineer", "output-aggregator"],
+      "forbidden_roles": ["frontend-developer", "ui-ux-designer", "mobile-developer"],
+      "dependency_notes": [
+        "database-engineer owns expand/backfill/contract sequencing before backend-developer changes validation behavior",
+        "devops-engineer is optional if deployment orchestration is part of the rollout"
+      ],
+      "expected_process": "Use a sequenced medium workflow because migration order matters. Do not treat it as a full product or UI project."
+    },
+    {
+      "id": "complex-saas-analytics-platform",
+      "category": "platform_build",
+      "complexity": "complex",
+      "prompt": "Use the agent team to design and build a SaaS analytics platform with real-time ingestion, dashboards, auth, deployment, and testing.",
+      "required_roles": [
+        "product-manager",
+        "system-architect",
+        "frontend-developer",
+        "backend-developer",
+        "database-engineer",
+        "devops-engineer",
+        "qa-engineer",
+        "security-engineer"
+      ],
+      "optional_roles": ["ui-ux-designer", "output-aggregator"],
+      "forbidden_roles": ["mobile-developer"],
+      "dependency_notes": [
+        "product-manager should stabilize MVP scope before architecture and implementation planning",
+        "system-architect should define service, data, and deployment boundaries before implementation batches",
+        "qa-engineer and security-engineer should run after there is a design or implementation artifact to inspect"
+      ],
+      "expected_process": "Use phased coordination with prerequisites before implementation and targeted verification before final synthesis."
+    },
+    {
+      "id": "complex-mobile-offline-app",
+      "category": "platform_build",
+      "complexity": "complex",
+      "prompt": "Design and build a mobile field-service app with offline sync, backend APIs, conflict handling, deployment, and release testing.",
+      "required_roles": [
+        "product-manager",
+        "system-architect",
+        "mobile-developer",
+        "backend-developer",
+        "database-engineer",
+        "qa-engineer",
+        "security-engineer"
+      ],
+      "optional_roles": ["devops-engineer", "ui-ux-designer", "output-aggregator"],
+      "forbidden_roles": ["frontend-developer", "fullstack-developer"],
+      "dependency_notes": [
+        "system-architect should define sync, conflict, and API contracts before mobile and backend implementation",
+        "qa-engineer should cover offline, sync conflict, and release readiness risks"
+      ],
+      "expected_process": "Use a complex phased workflow because offline sync and release quality require explicit architecture, implementation, and verification stages."
+    },
+    {
+      "id": "complex-payment-ecommerce",
+      "category": "platform_build",
+      "complexity": "complex",
+      "prompt": "Use the agent team to build an e-commerce checkout with inventory reservation, payment integration, admin order review, CI/CD, and security review.",
+      "required_roles": [
+        "product-manager",
+        "system-architect",
+        "frontend-developer",
+        "backend-developer",
+        "database-engineer",
+        "devops-engineer",
+        "qa-engineer",
+        "security-engineer"
+      ],
+      "optional_roles": ["ui-ux-designer", "output-aggregator"],
+      "forbidden_roles": ["mobile-developer"],
+      "dependency_notes": [
+        "product-manager should define checkout scope and acceptance criteria before system design",
+        "database-engineer and backend-developer must align inventory reservation and payment transaction boundaries",
+        "security-engineer is required because payment and sensitive user data are involved"
+      ],
+      "expected_process": "Use a complex workflow with product, architecture, implementation, deployment, QA, and security stages."
+    }
+  ]
+}
